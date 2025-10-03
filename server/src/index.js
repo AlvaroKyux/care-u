@@ -7,8 +7,6 @@ import { connectDB } from './lib/db.js';
 import { requireAuth } from './middlewares/requireAuth.js';
 import postsRouter from './routes/posts.routes.js';
 
-app.use('/api/posts', postsRouter);
-
 const app = express();
 
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
@@ -22,6 +20,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRouter);
+app.use('/api/posts', postsRouter);
 
 const { PORT = 4000, MONGODB_URI } = process.env;
 
