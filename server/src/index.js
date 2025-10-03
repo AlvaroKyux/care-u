@@ -6,6 +6,8 @@ import authRouter from './routes/auth.routes.js';
 import { connectDB } from './lib/db.js';
 import { requireAuth } from './middlewares/requireAuth.js';
 import postsRouter from './routes/posts.routes.js';
+import notificationsRouter from './routes/notifications.routes.js';
+import usersRouter from './routes/users.routes.js';
 
 const app = express();
 
@@ -21,6 +23,8 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/posts', postsRouter);
+app.use('/api/notifications', notificationsRouter);
+app.use('/api/users', usersRouter);
 
 const { PORT = 4000, MONGODB_URI } = process.env;
 

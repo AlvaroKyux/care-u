@@ -1,6 +1,7 @@
 import { useAuth } from '../context/AuthContext';
 import '../styles/theme.css';
 import { Link } from 'react-router-dom';
+import NotificationsBell from '../components/NotificationsBell';
 
 export default function Dashboard(){
   const { user, logout } = useAuth();
@@ -19,9 +20,13 @@ export default function Dashboard(){
         <div style={{display:'grid', gap:12, marginTop:16}}>
           <Link className="btn" to="/new">Reportar incidencia</Link>
           <Link className="btn" to="/feed">Ver feed de incidencias</Link>
+          <Link className="btn" to="/profile">Editar perfil</Link>
           <button className="btn" onClick={logout}>Cerrar sesión</button>
         </div>
       </div>
+
+      {/* Campana flotante */}
+      <NotificationsBell />
     </div>
   );
 }

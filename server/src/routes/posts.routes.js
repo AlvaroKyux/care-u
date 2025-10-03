@@ -1,10 +1,13 @@
 import { Router } from 'express';
 import { requireAuth } from '../middlewares/requireAuth.js';
+import { requireRole } from '../middlewares/roles.js';
 import { Post, CATEGORIES } from '../models/Post.js';
+import { Notification } from '../models/Notification.js';
+import mongoose from 'mongoose';
 
 const router = Router();
 
-/** HU03 — Crear incidencia */
+// HU03 — Crear incidencia
 router.post('/', requireAuth, async (req, res) => {
   try {
     const { text, category, location } = req.body;
@@ -17,12 +20,9 @@ router.post('/', requireAuth, async (req, res) => {
 
     const doc = await Post.create({
       user: req.user.id,
-      text, category,
-      location: {
-        label: String(location.label),
-        lat: location.lat ?? undefined,
-        lng: location.lng ?? undefined
-      }
+      text,
+      category,
+      location: { label: String(location.label) }
     });
 
     const populated = await doc.populate('user', 'name role');
@@ -33,7 +33,7 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
-/** HU04 — Listar feed con filtros y paginación */
+// HU04 — Listar feed con filtros
 router.get('/', async (req, res) => {
   try {
     const { category, q, page = 1, limit = 10 } = req.query;
@@ -53,21 +53,41 @@ router.get('/', async (req, res) => {
       Post.countDocuments(filt)
     ]);
 
-    res.json({
-      items,
-      total,
-      page: Number(page),
-      pages: Math.ceil(total / Number(limit))
-    });
+    res.json({ items, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-/** Listado de categorías (para el selector del frontend) */
-router.get('/categories', (_req, res) => {
-  res.json({ categories: CATEGORIES });
+// HU08 — Cambiar estado y notificar (admin/staff)
+router.patch('/:id/status', requireAuth, requireRole('admin', 'staff'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, note } = req.body;
+    if (!['in_progress', 'resolved'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+    if (!mongoose.isValidObjectId(id)) return res.status(400).json({ error: 'Invalid id' });
+
+    const post = await Post.findByIdAndUpdate(
+      id,
+      { $set: { status } },
+      { new: true }
+    ).populate('user', 'name role');
+    if (!post) return res.status(404).json({ error: 'Not found' });
+
+    await Notification.create({
+      user: post.user._id,
+      type: status === 'resolved' ? 'post_resolved' : 'post_progress',
+      payload: { postId: post._id.toString(), status, note: note?.slice(0, 300) }
+    });
+
+    res.json({ post });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-export default router;
+export default router; // 👈 IMPORTANTE

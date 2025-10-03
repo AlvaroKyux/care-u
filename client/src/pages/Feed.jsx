@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import '../styles/theme.css';
 import PostCard from '../components/PostCard';
 import CategoryFilter from '../components/CategoryFilter';
 import { listCategories, listPosts } from '../api/posts';
+import NotificationsBell from '../components/NotificationsBell';
 
 export default function Feed(){
   const [cats, setCats] = useState(['maintenance','safety','cleaning','it','other']);
@@ -12,27 +13,44 @@ export default function Feed(){
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState('');
+  const mounted = useRef(false);
 
   useEffect(()=>{
     (async ()=>{
       try{
         const { data } = await listCategories();
-        setCats(data.categories);
+        if (Array.isArray(data?.categories)) setCats(data.categories);
       }catch{}
     })();
   },[]);
 
   async function fetchData(p = 1){
     setLoading(true);
+    setErr('');
     try{
       const { data } = await listPosts({ category, q, page: p, limit: 10 });
-      setItems(data.items);
-      setPage(data.page);
-      setPages(data.pages);
-    } finally { setLoading(false); }
+      setItems(data.items || []);
+      setPage(Number(data.page) || p);
+      setPages(Number(data.pages) || 1);
+    } catch {
+      setErr('Error al cargar el feed');
+      setItems([]);
+      setPage(1);
+      setPages(1);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  useEffect(()=>{ fetchData(1); }, [category]);
+  useEffect(()=>{
+    if (!mounted.current) {
+      mounted.current = true;
+      fetchData(1);
+      return;
+    }
+    fetchData(1);
+  }, [category]);
 
   function onSearch(e){
     e.preventDefault();
@@ -49,13 +67,28 @@ export default function Feed(){
         <div className="row" style={{gap:12, marginBottom:12}}>
           <CategoryFilter categories={cats} value={category} onChange={setCategory}/>
           <form onSubmit={onSearch} style={{display:'flex', gap:12}}>
-            <input className="input" placeholder="Buscar…" value={q} onChange={e=>setQ(e.target.value)} />
-            <button className="btn" disabled={loading}>{loading ? 'Buscando…' : 'Buscar'}</button>
+            <input
+              className="input"
+              placeholder="Buscar…"
+              value={q}
+              onChange={e=>setQ(e.target.value)}
+            />
+            <button className="btn" disabled={loading}>
+              {loading ? 'Buscando…' : 'Buscar'}
+            </button>
           </form>
         </div>
 
+        {err && <div className="error" style={{marginBottom:8}}>{err}</div>}
+
         <div className="row" style={{gap:14}}>
-          {items.map(p => <PostCard key={p._id} post={p} />)}
+          {items.map(p => (
+            <PostCard
+              key={p._id}
+              post={p}
+              onChanged={() => fetchData(page)}
+            />
+          ))}
           {!loading && items.length === 0 && <div className="helper">Sin resultados</div>}
         </div>
 
@@ -64,6 +97,9 @@ export default function Feed(){
           <button className="btn" disabled={page>=pages || loading} onClick={()=>fetchData(page+1)}>Siguiente</button>
         </div>
       </div>
+
+      {/* Campana flotante */}
+      <NotificationsBell />
     </div>
   );
 }

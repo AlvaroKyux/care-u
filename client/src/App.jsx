@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import CreateIncident from './pages/CreateIncident';
 import Feed from './pages/Feed';
+import Profile from './pages/Profile';
 
 function PrivateRoute({ children }){
   const { token } = useAuth();
@@ -23,6 +24,7 @@ export default function App(){
           <Route path="*" element={<Navigate to="/login" replace />} />
           <Route path="/feed" element={<PrivateRoute><Feed/></PrivateRoute>} />
           <Route path="/new" element={<PrivateRoute><CreateIncident/></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><Profile/></PrivateRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
