@@ -1,5 +1,13 @@
 import '../styles/theme.css';
 
+const CAT_LABEL = {
+  maintenance:'Mantenimiento',
+  safety:'Seguridad',
+  cleaning:'Limpieza',
+  it:'TI',
+  other:'Otro'
+};
+
 export default function PostCard({ post }){
   return (
     <div style={{
@@ -7,11 +15,11 @@ export default function PostCard({ post }){
       borderRadius:12, padding:16, display:'grid', gap:8
     }}>
       <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-        <div style={{fontWeight:700}}>{post.user?.name ?? 'User'}</div>
+        <div style={{fontWeight:700}}>{post.user?.name ?? 'Usuario'}</div>
         <span style={{
           fontSize:12, padding:'4px 8px', borderRadius:999,
           background:'rgba(97,168,255,.14)', border:'1px solid #284a7a'
-        }}>{post.category}</span>
+        }}>{CAT_LABEL[post.category] || post.category}</span>
       </div>
       <div style={{whiteSpace:'pre-wrap', lineHeight:1.45}}>{post.text}</div>
       <div className="helper">

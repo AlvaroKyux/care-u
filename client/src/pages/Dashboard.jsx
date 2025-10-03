@@ -9,18 +9,17 @@ export default function Dashboard(){
   return (
     <div className="container">
       <div className="card" style={{minWidth: 420}}>
-        <h2>Dashboard</h2>
-        <p className="helper">Signed in as <b>{user.name}</b> — <i>{user.role}</i></p>
+        <h2>Menú</h2>
+        <p className="helper">Sesión iniciada como <b>{user.name}</b> — <i>{user.role}</i></p>
 
-        {user.role === 'admin' && <p>Admin area: manage users, approvals, etc.</p>}
-        {user.role === 'staff' && <p>Staff area: tasks, schedules, reports.</p>}
-        {user.role === 'student' && <p>Student area: attendance, requests.</p>}
+        {user.role === 'admin' && <p>Área de administración: usuarios, aprobaciones…</p>}
+        {user.role === 'staff' && <p>Área de personal: tareas, horarios, reportes…</p>}
+        {user.role === 'student' && <p>Área de estudiante: asistencia, solicitudes…</p>}
 
-        {/* Acciones principales */}
         <div style={{display:'grid', gap:12, marginTop:16}}>
-          <Link className="btn" to="/new">Report incident</Link>
-          <Link className="btn" to="/feed">Open incidents feed</Link>
-          <button className="btn" onClick={logout}>Log out</button>
+          <Link className="btn" to="/new">Reportar incidencia</Link>
+          <Link className="btn" to="/feed">Ver feed de incidencias</Link>
+          <button className="btn" onClick={logout}>Cerrar sesión</button>
         </div>
       </div>
     </div>

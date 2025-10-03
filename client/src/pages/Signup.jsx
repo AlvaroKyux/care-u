@@ -22,32 +22,33 @@ export default function Signup() {
       login(data.user, data.token);
       nav('/dashboard');
     }catch(err){
-      const text = err?.response?.data?.error || 'Error';
+      const api = err?.response?.data?.error;
+      const text = api === 'Email already registered'
+        ? 'El correo ya está registrado'
+        : (api || 'Error del servidor');
       setMsg({ type:'error', text });
-    }finally{
-      setLoading(false);
-    }
+    }finally{ setLoading(false); }
   }
 
   return (
-    <AuthCard title="Create your account" subtitle="Sign up to access CARE-U">
+    <AuthCard title="Crea tu cuenta" subtitle="Regístrate para acceder a CARE-U">
       <form onSubmit={onSubmit} className="row" style={{gap:14}}>
-        <input className="input" name="name" placeholder="Full name" value={form.name} onChange={onChange} required />
-        <input className="input" name="email" type="email" placeholder="Email" value={form.email} onChange={onChange} required />
-        <input className="input" name="password" type="password" placeholder="Password (min 6)" value={form.password} onChange={onChange} minLength={6} required />
+        <input className="input" name="name" placeholder="Nombre completo" value={form.name} onChange={onChange} required />
+        <input className="input" name="email" type="email" placeholder="Correo electrónico" value={form.email} onChange={onChange} required />
+        <input className="input" name="password" type="password" placeholder="Contraseña (mín. 6)" value={form.password} onChange={onChange} minLength={6} required />
         <div className="row cols-2">
           <select className="input" name="role" value={form.role} onChange={onChange}>
-            <option value="student">Student</option>
-            <option value="staff">Staff</option>
-            <option value="admin">Admin</option>
+            <option value="student">Estudiante</option>
+            <option value="staff">Personal</option>
+            <option value="admin">Administrador</option>
           </select>
-          <button className="btn" disabled={loading}>{loading ? 'Creating…' : 'Sign up'}</button>
+          <button className="btn" disabled={loading}>{loading ? 'Creando…' : 'Registrarme'}</button>
         </div>
         {msg.text && <div className={msg.type === 'error' ? 'error':'success'}>{msg.text}</div>}
       </form>
       <div className="footer-link">
-        <span className="helper">Already have an account? </span>
-        <Link to="/login">Log in</Link>
+        <span className="helper">¿Ya tienes cuenta? </span>
+        <Link to="/login">Inicia sesión</Link>
       </div>
     </AuthCard>
   );

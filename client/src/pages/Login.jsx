@@ -22,24 +22,25 @@ export default function Login() {
       login(data.user, data.token);
       nav('/dashboard');
     }catch(err){
-      const text = err?.response?.data?.error || 'Error';
+      const api = err?.response?.data?.error;
+      const text = api === 'Invalid credentials'
+        ? 'Credenciales inválidas'
+        : (api || 'Error del servidor');
       setMsg({ type:'error', text });
-    }finally{
-      setLoading(false);
-    }
+    }finally{ setLoading(false); }
   }
 
   return (
-    <AuthCard title="Welcome back" subtitle="Log in to continue">
+    <AuthCard title="Bienvenido" subtitle="Inicia sesión para continuar">
       <form onSubmit={onSubmit} className="row" style={{gap:14}}>
-        <input className="input" name="email" type="email" placeholder="Email" value={form.email} onChange={onChange} required />
-        <input className="input" name="password" type="password" placeholder="Password" value={form.password} onChange={onChange} required />
-        <button className="btn" disabled={loading}>{loading ? 'Signing in…' : 'Log in'}</button>
+        <input className="input" name="email" type="email" placeholder="Correo electrónico" value={form.email} onChange={onChange} required />
+        <input className="input" name="password" type="password" placeholder="Contraseña" value={form.password} onChange={onChange} required />
+        <button className="btn" disabled={loading}>{loading ? 'Ingresando…' : 'Iniciar sesión'}</button>
         {msg.text && <div className={msg.type === 'error' ? 'error':'success'}>{msg.text}</div>}
       </form>
       <div className="footer-link">
-        <span className="helper">No account? </span>
-        <Link to="/signup">Create one</Link>
+        <span className="helper">¿No tienes cuenta? </span>
+        <Link to="/signup">Regístrate</Link>
       </div>
     </AuthCard>
   );

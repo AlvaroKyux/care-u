@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import '../styles/theme.css';
-import AuthCard from '../components/AuthCard';
 import PostCard from '../components/PostCard';
 import CategoryFilter from '../components/CategoryFilter';
 import { listCategories, listPosts } from '../api/posts';
@@ -33,7 +32,7 @@ export default function Feed(){
     } finally { setLoading(false); }
   }
 
-  useEffect(()=>{ fetchData(1); }, [category]); // refresca por categoría
+  useEffect(()=>{ fetchData(1); }, [category]);
 
   function onSearch(e){
     e.preventDefault();
@@ -44,25 +43,25 @@ export default function Feed(){
     <div className="container">
       <div className="card" style={{maxWidth:860, width:'100%'}}>
         <div className="brand"><span className="dot"/><h1>CARE-U</h1></div>
-        <h2>Incidents feed</h2>
-        <p className="helper">Filter by category or search text</p>
+        <h2>Feed de incidencias</h2>
+        <p className="helper">Filtra por categoría o busca por texto</p>
 
         <div className="row" style={{gap:12, marginBottom:12}}>
           <CategoryFilter categories={cats} value={category} onChange={setCategory}/>
           <form onSubmit={onSearch} style={{display:'flex', gap:12}}>
-            <input className="input" placeholder="Search…" value={q} onChange={e=>setQ(e.target.value)} />
-            <button className="btn" disabled={loading}>{loading ? 'Searching…' : 'Search'}</button>
+            <input className="input" placeholder="Buscar…" value={q} onChange={e=>setQ(e.target.value)} />
+            <button className="btn" disabled={loading}>{loading ? 'Buscando…' : 'Buscar'}</button>
           </form>
         </div>
 
         <div className="row" style={{gap:14}}>
           {items.map(p => <PostCard key={p._id} post={p} />)}
-          {!loading && items.length === 0 && <div className="helper">No results</div>}
+          {!loading && items.length === 0 && <div className="helper">Sin resultados</div>}
         </div>
 
         <div style={{display:'flex', gap:10, marginTop:16, justifyContent:'flex-end'}}>
-          <button className="btn" disabled={page<=1 || loading} onClick={()=>fetchData(page-1)}>Prev</button>
-          <button className="btn" disabled={page>=pages || loading} onClick={()=>fetchData(page+1)}>Next</button>
+          <button className="btn" disabled={page<=1 || loading} onClick={()=>fetchData(page-1)}>Anterior</button>
+          <button className="btn" disabled={page>=pages || loading} onClick={()=>fetchData(page+1)}>Siguiente</button>
         </div>
       </div>
     </div>
