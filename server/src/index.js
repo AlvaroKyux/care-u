@@ -5,6 +5,9 @@ import cookieParser from 'cookie-parser';
 import authRouter from './routes/auth.routes.js';
 import { connectDB } from './lib/db.js';
 import { requireAuth } from './middlewares/requireAuth.js';
+import postsRouter from './routes/posts.routes.js';
+
+app.use('/api/posts', postsRouter);
 
 const app = express();
 
