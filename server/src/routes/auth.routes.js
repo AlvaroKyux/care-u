@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { createUser, verifyCredentials } from '../models/userStore.js';
 import { signToken } from '../lib/jwt.js';
+import { User, USER_ROLES } from '../models/User.js';
 
 const router = Router();
 
-// HU01 — Registro
+// HU01 — Registro (Sign up)
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -12,23 +12,27 @@ router.post('/register', async (req, res) => {
     if (!name || !email || !password || !role) {
       return res.status(400).json({ error: 'Missing fields' });
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: 'Invalid email' });
-    }
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be 6+ chars' });
-    }
-    if (!['admin', 'staff', 'student'].includes(role)) {
+    if (!USER_ROLES.includes(role)) {
       return res.status(400).json({ error: 'Invalid role' });
     }
 
-    const user = await createUser({ name, email, password, role });
-    const token = signToken({ id: user.id, role: user.role });
+    // ¿email ya existe?
+    const exists = await User.findOne({ email: email.toLowerCase() }).lean();
+    if (exists) return res.status(409).json({ error: 'Email already registered' });
 
-    // Simple: devolver token en JSON (rápido para pruebas)
-    return res.status(201).json({ user, token });
+    // Crear usuario (usa virtual "password" para hashear)
+    const user = new User({ name, email, role });
+    user.password = password;
+    await user.save();
+
+    const token = signToken({ id: user._id.toString(), role: user.role });
+
+    // Limpio respuesta
+    const { passwordHash, ...safe } = user.toObject();
+    return res.status(201).json({ user: safe, token });
   } catch (e) {
-    if (e.code === 'EMAIL_TAKEN') {
+    // Detección de índice único duplicate key
+    if (e?.code === 11000) {
       return res.status(409).json({ error: 'Email already registered' });
     }
     console.error(e);
@@ -43,11 +47,16 @@ router.post('/login', async (req, res) => {
     if (!email || !password)
       return res.status(400).json({ error: 'Missing credentials' });
 
-    const user = await verifyCredentials(email, password);
+    // Trae también passwordHash con select('+passwordHash')
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+passwordHash');
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
-    const token = signToken({ id: user.id, role: user.role });
-    return res.json({ user, token });
+    const ok = await user.comparePassword(password);
+    if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
+
+    const token = signToken({ id: user._id.toString(), role: user.role });
+    const { passwordHash, ...safe } = user.toObject();
+    return res.json({ user: safe, token });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ error: 'Server error' });
