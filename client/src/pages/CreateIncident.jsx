@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import AuthCard from '../components/AuthCard';
 import { createPost } from '../api/posts';
 import { useAuth } from '../context/AuthContext';
@@ -10,40 +10,22 @@ export default function CreateIncident(){
   const { token } = useAuth();
   const nav = useNavigate();
   const [form, setForm] = useState({
-    text:'', category:'maintenance',
-    locationLabel:'', lat:'', lng:''
+    text:'', category:'maintenance', locationLabel:''
   });
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState({ type:null, text:'' });
 
-  // autollenar lat/lng (opcional)
-  useEffect(()=>{
-    if(!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos)=>{
-        setForm(f=>({
-          ...f,
-          lat: pos.coords.latitude.toFixed(6),
-          lng: pos.coords.longitude.toFixed(6)
-        }));
-      },
-      ()=>{}
-    );
-  },[]);
-
   const onChange = e => setForm(f=>({ ...f, [e.target.name]: e.target.value }));
 
   async function onSubmit(e){
-    e.preventDefault(); setMsg({type:null,text:''}); setLoading(true);
+    e.preventDefault();
+    setMsg({type:null,text:''});
+    setLoading(true);
     try{
       const payload = {
         text: form.text.trim(),
         category: form.category,
-        location: {
-          label: form.locationLabel.trim(),
-          lat: form.lat ? Number(form.lat) : undefined,
-          lng: form.lng ? Number(form.lng) : undefined
-        }
+        location: { label: form.locationLabel.trim() } // solo etiqueta
       };
       await createPost(payload, token);
       nav('/feed');
@@ -65,12 +47,11 @@ export default function CreateIncident(){
           <select className="input" name="category" value={form.category} onChange={onChange}>
             {CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}
           </select>
-          <input className="input" name="locationLabel" placeholder="Location (e.g., Building A, Lab 3)"
-                 value={form.locationLabel} onChange={onChange} required />
-        </div>
-        <div className="row cols-2">
-          <input className="input" name="lat" placeholder="Latitude (optional)" value={form.lat} onChange={onChange} />
-          <input className="input" name="lng" placeholder="Longitude (optional)" value={form.lng} onChange={onChange} />
+          <input
+            className="input" name="locationLabel"
+            placeholder="Location (e.g., Building A, Lab 3)"
+            value={form.locationLabel} onChange={onChange} required
+          />
         </div>
         <button className="btn" disabled={loading}>{loading ? 'Posting…':'Create incident'}</button>
         {msg.text && <div className={msg.type==='error'?'error':'success'}>{msg.text}</div>}
