@@ -1,239 +1,310 @@
-# ============================================================
-# PROGRAMA MULTIFUNCIÓN EN PYTHON (300+ LÍNEAS)
+# ================================================================
+# PROGRAMA MULTIFUNCIÓN EN PYTHON (300+ LÍNEAS) - VERSIÓN 2
 # Autor: ChatGPT (GPT-5)
 # Descripción:
-# Este programa realiza tres acciones principales:
-#   1. Gestión de tareas (To-Do List)
-#   2. Simulación del clima
-#   3. Juego de adivinanza numérica
-# ============================================================
+# Este programa ofrece tres módulos:
+#   1. Calculadora científica
+#   2. Conversor de unidades
+#   3. Generador de contraseñas
+# ================================================================
 
+import math
 import random
+import string
 import time
-from datetime import datetime
 
-# ============================================================
-# CLASE 1: SISTEMA DE GESTIÓN DE TAREAS
-# ============================================================
+# ================================================================
+# CLASE 1: CALCULADORA CIENTÍFICA
+# ================================================================
 
-class Tarea:
-    def __init__(self, titulo, descripcion, prioridad):
-        self.titulo = titulo
-        self.descripcion = descripcion
-        self.prioridad = prioridad
-        self.completada = False
-        self.fecha_creacion = datetime.now()
-
-    def marcar_completada(self):
-        self.completada = True
-
-    def __str__(self):
-        estado = "✅ Completada" if self.completada else "❌ Pendiente"
-        return f"[{estado}] {self.titulo} (Prioridad: {self.prioridad}) - {self.descripcion}"
-
-
-class GestorTareas:
+class Calculadora:
     def __init__(self):
-        self.tareas = []
+        pass
 
-    def agregar_tarea(self, titulo, descripcion, prioridad):
-        tarea = Tarea(titulo, descripcion, prioridad)
-        self.tareas.append(tarea)
-        print("\n📝 Tarea agregada correctamente.\n")
+    def sumar(self, a, b):
+        return a + b
 
-    def listar_tareas(self):
-        if not self.tareas:
-            print("\nNo hay tareas registradas.\n")
-            return
-        print("\n=== LISTA DE TAREAS ===")
-        for i, tarea in enumerate(self.tareas, 1):
-            print(f"{i}. {tarea}")
+    def restar(self, a, b):
+        return a - b
 
-    def marcar_tarea(self, indice):
-        try:
-            tarea = self.tareas[indice - 1]
-            tarea.marcar_completada()
-            print(f"\n✔️ Tarea '{tarea.titulo}' marcada como completada.\n")
-        except IndexError:
-            print("\n⚠️ Índice no válido.\n")
+    def multiplicar(self, a, b):
+        return a * b
 
-    def eliminar_tarea(self, indice):
-        try:
-            tarea = self.tareas.pop(indice - 1)
-            print(f"\n🗑️ Tarea '{tarea.titulo}' eliminada.\n")
-        except IndexError:
-            print("\n⚠️ Índice no válido.\n")
+    def dividir(self, a, b):
+        if b == 0:
+            raise ValueError("No se puede dividir entre cero.")
+        return a / b
+
+    def potencia(self, base, exponente):
+        return base ** exponente
+
+    def raiz(self, numero, indice=2):
+        if numero < 0 and indice % 2 == 0:
+            raise ValueError("No se puede calcular la raíz par de un número negativo.")
+        return numero ** (1 / indice)
+
+    def seno(self, grados):
+        return math.sin(math.radians(grados))
+
+    def coseno(self, grados):
+        return math.cos(math.radians(grados))
+
+    def tangente(self, grados):
+        return math.tan(math.radians(grados))
+
+    def factorial(self, n):
+        if n < 0:
+            raise ValueError("No existe factorial de número negativo.")
+        return math.factorial(n)
+
+    def mostrar_menu(self):
+        print("\n=== CALCULADORA CIENTÍFICA ===")
+        print("1. Suma")
+        print("2. Resta")
+        print("3. Multiplicación")
+        print("4. División")
+        print("5. Potencia")
+        print("6. Raíz")
+        print("7. Seno / Coseno / Tangente")
+        print("8. Factorial")
+        print("9. Volver al menú principal")
 
 
-# ============================================================
-# CLASE 2: SIMULADOR DE CLIMA
-# ============================================================
+# ================================================================
+# CLASE 2: CONVERSOR DE UNIDADES
+# ================================================================
 
-class SimuladorClima:
+class Conversor:
     def __init__(self):
-        self.estados = ["Soleado", "Nublado", "Lluvioso", "Tormenta eléctrica", "Nevado", "Ventoso"]
+        self.menu_principal = {
+            "1": "Temperatura",
+            "2": "Distancia",
+            "3": "Peso",
+            "4": "Volver al menú principal"
+        }
 
-    def generar_temperatura(self):
-        return round(random.uniform(-5, 40), 1)
+    # -------- TEMPERATURA --------
+    def celsius_a_fahrenheit(self, c):
+        return (c * 9/5) + 32
 
-    def generar_humedad(self):
-        return random.randint(10, 100)
+    def fahrenheit_a_celsius(self, f):
+        return (f - 32) * 5/9
 
-    def generar_estado(self):
-        return random.choice(self.estados)
+    def celsius_a_kelvin(self, c):
+        return c + 273.15
 
-    def mostrar_clima_actual(self):
-        temperatura = self.generar_temperatura()
-        humedad = self.generar_humedad()
-        estado = self.generar_estado()
-        print("\n=== CLIMA SIMULADO ===")
-        print(f"🌡️ Temperatura: {temperatura}°C")
-        print(f"💧 Humedad: {humedad}%")
-        print(f"🌤️ Estado: {estado}\n")
+    # -------- DISTANCIA --------
+    def metros_a_kilometros(self, m):
+        return m / 1000
 
-    def pronostico_extendido(self, dias=5):
-        print(f"\n=== Pronóstico para los próximos {dias} días ===")
-        for d in range(1, dias + 1):
-            temp = self.generar_temperatura()
-            hum = self.generar_humedad()
-            estado = self.generar_estado()
-            print(f"Día {d}: {estado} | {temp}°C | Humedad {hum}%")
-        print()
+    def kilometros_a_millas(self, km):
+        return km * 0.621371
+
+    def millas_a_kilometros(self, mi):
+        return mi / 0.621371
+
+    # -------- PESO --------
+    def kilogramos_a_libras(self, kg):
+        return kg * 2.20462
+
+    def libras_a_kilogramos(self, lb):
+        return lb / 2.20462
+
+    # -------- MENÚ --------
+    def mostrar_menu(self):
+        print("\n=== CONVERSOR DE UNIDADES ===")
+        for k, v in self.menu_principal.items():
+            print(f"{k}. {v}")
 
 
-# ============================================================
-# CLASE 3: JUEGO DE ADIVINANZA
-# ============================================================
+# ================================================================
+# CLASE 3: GENERADOR DE CONTRASEÑAS
+# ================================================================
 
-class JuegoAdivinanza:
+class GeneradorContrasenas:
     def __init__(self):
-        self.numero_secreto = random.randint(1, 100)
-        self.intentos = 0
-        self.jugando = True
+        self.niveles = {
+            "1": "Básico (solo letras minúsculas)",
+            "2": "Intermedio (letras y números)",
+            "3": "Avanzado (letras, números y símbolos)"
+        }
 
-    def iniciar(self):
-        print("\n🎮 Bienvenido al Juego de Adivinanza 🎮")
-        print("Adivina el número entre 1 y 100.\n")
-
-        while self.jugando:
-            try:
-                numero = int(input("Introduce tu número: "))
-                self.intentos += 1
-                self.verificar(numero)
-            except ValueError:
-                print("⚠️ Ingresa un número válido.")
-
-    def verificar(self, numero):
-        if numero < self.numero_secreto:
-            print("🔼 El número secreto es mayor.")
-        elif numero > self.numero_secreto:
-            print("🔽 El número secreto es menor.")
+    def generar(self, longitud, nivel):
+        if nivel == "1":
+            caracteres = string.ascii_lowercase
+        elif nivel == "2":
+            caracteres = string.ascii_letters + string.digits
+        elif nivel == "3":
+            caracteres = string.ascii_letters + string.digits + string.punctuation
         else:
-            print(f"\n🎉 ¡Felicidades! Adivinaste el número {self.numero_secreto} en {self.intentos} intentos.\n")
-            self.jugando = False
+            raise ValueError("Nivel inválido.")
+
+        contrasena = ''.join(random.choice(caracteres) for _ in range(longitud))
+        return contrasena
+
+    def mostrar_menu(self):
+        print("\n=== GENERADOR DE CONTRASEÑAS ===")
+        for k, v in self.niveles.items():
+            print(f"{k}. {v}")
+        print("4. Volver al menú principal")
 
 
-# ============================================================
-# FUNCIONES DE MENÚ
-# ============================================================
+# ================================================================
+# FUNCIONES AUXILIARES
+# ================================================================
 
-def menu_tareas(gestor):
+def ejecutar_calculadora(calc):
     while True:
-        print("\n=== MENÚ DE TAREAS ===")
-        print("1. Agregar tarea")
-        print("2. Listar tareas")
-        print("3. Marcar tarea como completada")
-        print("4. Eliminar tarea")
-        print("5. Volver al menú principal")
+        calc.mostrar_menu()
+        opcion = input("Selecciona una opción: ")
 
+        try:
+            if opcion in ["1", "2", "3", "4", "5"]:
+                a = float(input("Introduce el primer número: "))
+                b = float(input("Introduce el segundo número: "))
+
+            if opcion == "1":
+                print(f"Resultado: {calc.sumar(a, b)}")
+            elif opcion == "2":
+                print(f"Resultado: {calc.restar(a, b)}")
+            elif opcion == "3":
+                print(f"Resultado: {calc.multiplicar(a, b)}")
+            elif opcion == "4":
+                print(f"Resultado: {calc.dividir(a, b)}")
+            elif opcion == "5":
+                print(f"Resultado: {calc.potencia(a, b)}")
+            elif opcion == "6":
+                n = float(input("Número: "))
+                i = float(input("Índice de la raíz (ej. 2 para raíz cuadrada): "))
+                print(f"Resultado: {calc.raiz(n, i)}")
+            elif opcion == "7":
+                g = float(input("Introduce ángulo en grados: "))
+                print(f"Seno: {calc.seno(g):.4f}")
+                print(f"Coseno: {calc.coseno(g):.4f}")
+                print(f"Tangente: {calc.tangente(g):.4f}")
+            elif opcion == "8":
+                n = int(input("Introduce número entero: "))
+                print(f"Resultado: {calc.factorial(n)}")
+            elif opcion == "9":
+                break
+            else:
+                print("⚠️ Opción no válida.")
+        except Exception as e:
+            print(f"Error: {e}")
+
+
+def ejecutar_conversor(conv):
+    while True:
+        conv.mostrar_menu()
         opcion = input("Selecciona una opción: ")
 
         if opcion == "1":
-            titulo = input("Título: ")
-            descripcion = input("Descripción: ")
-            prioridad = input("Prioridad (Alta/Media/Baja): ")
-            gestor.agregar_tarea(titulo, descripcion, prioridad)
+            print("\n1. Celsius a Fahrenheit")
+            print("2. Fahrenheit a Celsius")
+            print("3. Celsius a Kelvin")
+            print("4. Volver")
+            op = input("Opción: ")
+            try:
+                if op == "1":
+                    c = float(input("Celsius: "))
+                    print(f"{c}°C = {conv.celsius_a_fahrenheit(c)}°F")
+                elif op == "2":
+                    f = float(input("Fahrenheit: "))
+                    print(f"{f}°F = {conv.fahrenheit_a_celsius(f)}°C")
+                elif op == "3":
+                    c = float(input("Celsius: "))
+                    print(f"{c}°C = {conv.celsius_a_kelvin(c)}K")
+                elif op == "4":
+                    continue
+            except ValueError:
+                print("⚠️ Entrada no válida.")
 
         elif opcion == "2":
-            gestor.listar_tareas()
+            print("\n1. Metros a kilómetros")
+            print("2. Kilómetros a millas")
+            print("3. Millas a kilómetros")
+            print("4. Volver")
+            op = input("Opción: ")
+            try:
+                if op == "1":
+                    m = float(input("Metros: "))
+                    print(f"{m} m = {conv.metros_a_kilometros(m)} km")
+                elif op == "2":
+                    km = float(input("Kilómetros: "))
+                    print(f"{km} km = {conv.kilometros_a_millas(km)} mi")
+                elif op == "3":
+                    mi = float(input("Millas: "))
+                    print(f"{mi} mi = {conv.millas_a_kilometros(mi)} km")
+            except ValueError:
+                print("⚠️ Entrada no válida.")
 
         elif opcion == "3":
-            gestor.listar_tareas()
+            print("\n1. Kilogramos a libras")
+            print("2. Libras a kilogramos")
+            print("3. Volver")
+            op = input("Opción: ")
             try:
-                indice = int(input("Número de tarea a marcar: "))
-                gestor.marcar_tarea(indice)
+                if op == "1":
+                    kg = float(input("Kilogramos: "))
+                    print(f"{kg} kg = {conv.kilogramos_a_libras(kg)} lb")
+                elif op == "2":
+                    lb = float(input("Libras: "))
+                    print(f"{lb} lb = {conv.libras_a_kilogramos(lb)} kg")
             except ValueError:
                 print("⚠️ Entrada no válida.")
 
         elif opcion == "4":
-            gestor.listar_tareas()
-            try:
-                indice = int(input("Número de tarea a eliminar: "))
-                gestor.eliminar_tarea(indice)
-            except ValueError:
-                print("⚠️ Entrada no válida.")
-
-        elif opcion == "5":
             break
         else:
             print("⚠️ Opción no válida.")
 
 
-def menu_clima(simulador):
+def ejecutar_generador(gen):
     while True:
-        print("\n=== MENÚ DE CLIMA ===")
-        print("1. Mostrar clima actual")
-        print("2. Pronóstico extendido")
-        print("3. Volver al menú principal")
+        gen.mostrar_menu()
+        opcion = input("Selecciona un nivel de seguridad: ")
 
-        opcion = input("Selecciona una opción: ")
-
-        if opcion == "1":
-            simulador.mostrar_clima_actual()
-        elif opcion == "2":
+        if opcion in ["1", "2", "3"]:
             try:
-                dias = int(input("¿Cuántos días deseas simular?: "))
-                simulador.pronostico_extendido(dias)
-            except ValueError:
-                print("⚠️ Ingresa un número válido.")
-        elif opcion == "3":
+                longitud = int(input("Longitud de la contraseña: "))
+                contrasena = gen.generar(longitud, opcion)
+                print(f"\n🔐 Contraseña generada: {contrasena}\n")
+            except Exception as e:
+                print(f"Error: {e}")
+        elif opcion == "4":
             break
         else:
             print("⚠️ Opción no válida.")
 
 
-def menu_adivinanza():
-    juego = JuegoAdivinanza()
-    juego.iniciar()
-
-
-# ============================================================
+# ================================================================
 # MENÚ PRINCIPAL
-# ============================================================
+# ================================================================
 
 def menu_principal():
-    gestor = GestorTareas()
-    simulador = SimuladorClima()
+    calc = Calculadora()
+    conv = Conversor()
+    gen = GeneradorContrasenas()
 
     while True:
         print("\n===============================")
-        print("🌟 MENÚ PRINCIPAL DEL PROGRAMA 🌟")
+        print("🌟 MENÚ PRINCIPAL 🌟")
         print("===============================")
-        print("1. Gestión de tareas")
-        print("2. Simulación del clima")
-        print("3. Juego de adivinanza")
+        print("1. Calculadora científica")
+        print("2. Conversor de unidades")
+        print("3. Generador de contraseñas")
         print("4. Salir")
 
-        opcion = input("\nSelecciona una opción: ")
+        opcion = input("Selecciona una opción: ")
 
         if opcion == "1":
-            menu_tareas(gestor)
+            ejecutar_calculadora(calc)
         elif opcion == "2":
-            menu_clima(simulador)
+            ejecutar_conversor(conv)
         elif opcion == "3":
-            menu_adivinanza()
+            ejecutar_generador(gen)
         elif opcion == "4":
-            print("\n👋 ¡Gracias por usar el programa multifunción!")
+            print("\n👋 ¡Gracias por usar el programa multifunción 2!")
             break
         else:
             print("⚠️ Opción no válida.")
@@ -241,13 +312,13 @@ def menu_principal():
         time.sleep(1)
 
 
-# ============================================================
+# ================================================================
 # PUNTO DE ENTRADA
-# ============================================================
+# ================================================================
 
 if __name__ == "__main__":
     menu_principal()
 
-# ============================================================
+# ================================================================
 # Fin del programa (más de 300 líneas)
-# ============================================================
+# ================================================================
