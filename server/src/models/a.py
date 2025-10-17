@@ -463,3 +463,153 @@ if __name__ == "__main__":
         _self_test()
     else:
         run_cli()
+
+
+from __future__ import annotations
+import argparse, json, time, os, sys
+from dataclasses import dataclass, asdict
+from typing import List, Dict, Any, Optional
+
+DB_PATH = os.path.join(os.path.expanduser("~"), ".todo100.json")
+
+@dataclass
+class Task:
+    id: int
+    text: str
+    created_at: float
+    done_at: Optional[float] = None
+    tags: List[str] = None
+    def to_row(self) -> List[str]:
+        status = "✓" if self.done_at else "·"
+        when = time.strftime("%Y-%m-%d %H:%M", time.localtime(self.created_at))
+        tg = ",".join(self.tags or [])
+        return [str(self.id), status, when, self.text + (f"  #{tg}" if tg else "")]
+
+def _now() -> float:
+    return time.time()
+
+def load_db() -> Dict[str, Any]:
+    if not os.path.exists(DB_PATH):
+        return {"seq": 0, "tasks": []}
+    try:
+        with open(DB_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        # backup corrupt DB
+        backup = DB_PATH + ".bak"
+        try: os.replace(DB_PATH, backup)
+        except Exception: pass
+        return {"seq": 0, "tasks": []}
+
+def save_db(db: Dict[str, Any]) -> None:
+    tmp = DB_PATH + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(db, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, DB_PATH)
+
+def add_task(text: str, tags: List[str]) -> Task:
+    db = load_db()
+    db["seq"] += 1
+    t = Task(id=db["seq"], text=text, created_at=_now(), tags=tags or [])
+    db["tasks"].append(asdict(t))
+    save_db(db)
+    return t
+
+def list_tasks(show_all: bool = False) -> List[Task]:
+    db = load_db()
+    items = [Task(**t) for t in db["tasks"]]
+    return items if show_all else [t for t in items if not t.done_at]
+
+def mark_done(tid: int) -> bool:
+    db = load_db()
+    for t in db["tasks"]:
+        if t["id"] == tid:
+            if t.get("done_at"): return False
+            t["done_at"] = _now()
+            save_db(db)
+            return True
+    return False
+
+def clear_done() -> int:
+    db = load_db()
+    before = len(db["tasks"])
+    db["tasks"] = [t for t in db["tasks"] if not t.get("done_at")]
+    save_db(db)
+    return before - len(db["tasks"])
+
+def stats() -> Dict[str, Any]:
+    items = list_tasks(show_all=True)
+    total = len(items)
+    done = sum(1 for t in items if t.done_at)
+    open_ = total - done
+    if done:
+        cycle = [t.done_at - t.created_at for t in items if t.done_at]
+        avg_cycle = sum(cycle) / len(cycle)
+    else:
+        avg_cycle = None
+    tag_counter: Dict[str, int] = {}
+    for t in items:
+        for tag in t.tags or []:
+            tag_counter[tag] = tag_counter.get(tag, 0) + 1
+    top_tags = sorted(tag_counter.items(), key=lambda x: (-x[1], x[0]))[:5]
+    return {"total": total, "open": open_, "done": done, "avg_cycle_sec": avg_cycle, "top_tags": top_tags}
+
+def print_table(rows: List[List[str]]) -> None:
+    if not rows:
+        print("(sin resultados)"); return
+    widths = [max(len(str(x)) for x in col) for col in zip(*rows)]
+    for i, r in enumerate(rows):
+        line = " | ".join(str(x).ljust(widths[j]) for j, x in enumerate(r))
+        print(line)
+        if i == 0:
+            sep = "-+-".join("-" * w for w in widths)
+            print(sep)
+
+def parse_tags(text: str) -> (str, List[str]):
+    # tags estilo "#iot #hydroleaf"
+    parts = text.split()
+    tags = [p[1:] for p in parts if p.startswith("#") and len(p) > 1]
+    core = " ".join(p for p in parts if not p.startswith("#"))
+    return core.strip(), tags
+
+def main(argv=None):
+    p = argparse.ArgumentParser(prog="todo100", description="Pequeño gestor de pendientes (JSON)")
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    p_add = sub.add_parser("add", help="Agregar tarea (se aceptan tags con #)")
+    p_add.add_argument("text", nargs="+", help="Descripción de la tarea")
+
+    p_list = sub.add_parser("list", help="Listar tareas")
+    p_list.add_argument("--all", action="store_true", help="Incluir hechas")
+
+    p_done = sub.add_parser("done", help="Marcar tarea como hecha")
+    p_done.add_argument("id", type=int)
+
+    sub.add_parser("clear", help="Eliminar tareas hechas")
+    sub.add_parser("stats", help="Estadísticas")
+
+    args = p.parse_args(argv)
+
+    if args.cmd == "add":
+        raw = " ".join(args.text)
+        text, tags = parse_tags(raw)
+        t = add_task(text, tags)
+        print(f"[+] #{t.id} agregado: {t.text}" + (f"  tags={','.join(tags)}" if tags else ""))
+    elif args.cmd == "list":
+        items = list_tasks(show_all=args.all)
+        header = [["ID", "S", "Creado", "Texto"]]
+        rows = header + [t.to_row() for t in items]
+        print_table(rows)
+    elif args.cmd == "done":
+        ok = mark_done(args.id)
+        print("✓ marcado" if ok else "No encontrado o ya estaba hecho")
+    elif args.cmd == "clear":
+        n = clear_done()
+        print(f"Eliminadas {n} tareas hechas")
+    elif args.cmd == "stats":
+        s = stats()
+        print(json.dumps(s, indent=2, ensure_ascii=False))
+
+if __name__ == "__main__":
+    main()
+
