@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { requireAuth } from '../middlewares/requireAuth.js';
 import { requireRole } from '../middlewares/roles.js';
-import { Post, CATEGORIES } from '../models/Post.js';
+import { Alert, CATEGORIES } from '../models/Alert.js';
 import { Notification } from '../models/Notification.js';
 import mongoose from 'mongoose';
 
@@ -18,7 +18,7 @@ router.post('/', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Invalid category' });
     }
 
-    const doc = await Post.create({
+    const doc = await Alert.create({
       user: req.user.id,
       text,
       category,
@@ -26,7 +26,17 @@ router.post('/', requireAuth, async (req, res) => {
     });
 
     const populated = await doc.populate('user', 'name role');
-    res.status(201).json({ post: populated });
+    res.status(201).json({ Alert: populated });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// **Nueva ruta para obtener las categorías** (esto es lo que falta)
+router.get('/categories', (req, res) => {
+  try {
+    res.json({ categories: CATEGORIES });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Server error' });
@@ -44,13 +54,13 @@ router.get('/', async (req, res) => {
     const skip = (Number(page) - 1) * Number(limit);
 
     const [items, total] = await Promise.all([
-      Post.find(filt)
+      Alert.find(filt)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(Number(limit))
         .populate('user', 'name role')
         .lean(),
-      Post.countDocuments(filt)
+      Alert.countDocuments(filt)
     ]);
 
     res.json({ items, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
@@ -75,21 +85,21 @@ router.patch('/:id/status', requireAuth, requireRole('admin', 'staff'), async (r
     if (!mongoose.isValidObjectId(id)) return res.status(400).json({ error: 'Invalid id' });
 
     // Actualizar el estado de la publicación
-    const post = await Post.findByIdAndUpdate(
+    const alert = await Alert.findByIdAndUpdate(
       id,
       { $set: { status } },
       { new: true }
     ).populate('user', 'name role');
-    if (!post) return res.status(404).json({ error: 'Post not found' });
+    if (!alert) return res.status(404).json({ error: 'Alert not found' });
 
     // Crear una notificación para el usuario
     await Notification.create({
-      user: post.user._id,
-      type: status === 'resolved' ? 'post_resolved' : 'post_progress',
-      payload: { postId: post._id.toString(), status, note: note?.slice(0, 300) }
+      user: alert.user._id,
+      type: status === 'resolved' ? 'alert_resolved' : 'alert_progress',
+      payload: { alertId: alert._id.toString(), status, note: note?.slice(0, 300) }
     });
 
-    res.json({ post });
+    res.json({ alert });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Server error' });

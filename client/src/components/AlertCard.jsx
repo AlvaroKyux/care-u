@@ -1,12 +1,12 @@
 import '../styles/theme.css';
 import { useAuth } from '../context/AuthContext';
-import { updatePostStatus } from '../api/posts';
+import { updateAlertStatus } from '../api/alerts';
 import { useState } from 'react';
 
 const CAT_LABEL = { maintenance:'Mantenimiento', safety:'Seguridad', cleaning:'Limpieza', it:'TI', other:'Otro' };
 const STATUS_LABEL = { open:'Abierta', in_progress:'En progreso', resolved:'Resuelta' };
 
-export default function PostCard({ post, onChanged, isResolved }) {
+export default function AlertCard({ alert, onChanged, isResolved }) {
   const { token, user } = useAuth();
   const [loading, setLoading] = useState(false);
   
@@ -18,7 +18,7 @@ export default function PostCard({ post, onChanged, isResolved }) {
     if (!canManage) return;  // Si el usuario no tiene permisos, no hacer nada
     setLoading(true);
     try {
-      await updatePostStatus(post._id, status, '', token);
+      await updateAlertStatus(alert._id, status, '', token);
       onChanged?.(); // Actualizar el feed
     } finally {
       setLoading(false);
@@ -37,7 +37,7 @@ export default function PostCard({ post, onChanged, isResolved }) {
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
         <div style={{ fontWeight: 700 }}>
-          {post.user?.name ?? 'Usuario'}
+          {alert.user?.name ?? 'Usuario'}
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <span style={{
@@ -47,7 +47,7 @@ export default function PostCard({ post, onChanged, isResolved }) {
             background: 'rgba(97,168,255,.14)',
             border: '1px solid #284a7a'
           }}>
-            {CAT_LABEL[post.category] || post.category}
+            {CAT_LABEL[alert.category] || alert.category}
           </span>
           <span style={{
             fontSize: 12,
@@ -56,15 +56,15 @@ export default function PostCard({ post, onChanged, isResolved }) {
             background: 'rgba(65,209,167,.12)',
             border: '1px solid #2b6b58'
           }}>
-            {STATUS_LABEL[post.status] || post.status}
+            {STATUS_LABEL[alert.status] || alert.status}
           </span>
         </div>
       </div>
 
       <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.45 }}>
-        {post.text}
+        {alert.text}
       </div>
-      <div className="helper">📍 {post.location?.label} • {new Date(post.createdAt).toLocaleString()}</div>
+      <div className="helper">📍 {alert.location?.label} • {new Date(alert.createdAt).toLocaleString()}</div>
 
       {/* Mostrar botones solo si el usuario tiene permisos */}
       {canManage && (
@@ -72,7 +72,7 @@ export default function PostCard({ post, onChanged, isResolved }) {
           {/* Botón para marcar como en progreso */}
           <button
             className="btn"
-            disabled={loading || post.status === 'in_progress' || post.status === 'resolved'}
+            disabled={loading || alert.status === 'in_progress' || alert.status === 'resolved'}
             onClick={() => setStatus('in_progress')}
           >
             Marcar en progreso
@@ -81,7 +81,7 @@ export default function PostCard({ post, onChanged, isResolved }) {
           {/* Botón para marcar como resuelta */}
           <button
             className="btn"
-            disabled={loading || post.status === 'resolved'}
+            disabled={loading || alert.status === 'resolved'}
             onClick={() => setStatus('resolved')}
           >
             Marcar resuelta

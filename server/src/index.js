@@ -8,6 +8,7 @@ import { requireAuth } from './middlewares/requireAuth.js';
 import postsRouter from './routes/posts.routes.js';
 import notificationsRouter from './routes/notifications.routes.js';
 import usersRouter from './routes/users.routes.js';
+import alertRoutes from './routes/alert.routes.js';
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/posts', postsRouter);
 app.use('/api/notifications', notificationsRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/alerts', alertRoutes);
 
 const { PORT = 4000, MONGODB_URI } = process.env;
 

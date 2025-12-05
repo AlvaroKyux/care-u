@@ -6,6 +6,10 @@ import Dashboard from './pages/Dashboard';
 import CreateIncident from './pages/CreateIncident';
 import Feed from './pages/Feed';
 import Profile from './pages/Profile';
+import AdminRoute from './components/AdminRoute'; 
+import UserManagement from './pages/UserManagement'; 
+import CreateAlert from './pages/CreateAlert';
+import AlertFeed from './pages/AlertFeed';  // Nuevo
 
 function PrivateRoute({ children }){
   const { token } = useAuth();
@@ -25,6 +29,9 @@ export default function App(){
           <Route path="/feed" element={<PrivateRoute><Feed/></PrivateRoute>} />
           <Route path="/new" element={<PrivateRoute><CreateIncident/></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile/></PrivateRoute>} />
+          <Route path="/admin" element={<AdminRoute><UserManagement /></AdminRoute>}/>
+          <Route path="/create-alert" element={<PrivateRoute><CreateAlert /></PrivateRoute>} /> 
+          <Route path="/alert-feed" element={<PrivateRoute><AlertFeed /></PrivateRoute>} /> 
         </Routes>
       </BrowserRouter>
     </AuthProvider>

@@ -17,6 +17,8 @@ const userSchema = new mongoose.Schema(
     // OJO: lo llenamos antes de validar (pre('validate'))
     passwordHash: { type: String, required: true, select: false },
     role: { type: String, enum: USER_ROLES, required: true, default: 'student' },
+    bannedUntil: { type: Date, default: null },  // Fecha de baneo
+    banReason: { type: String, default: '' },   // Razón del baneo
   },
   { timestamps: true }
 );
@@ -52,6 +54,11 @@ userSchema.pre('validate', async function (next) {
 // método para comparar contraseñas
 userSchema.methods.comparePassword = function (plain) {
   return bcrypt.compare(plain, this.passwordHash);
+};
+
+// Método para verificar si el usuario está baneado
+userSchema.methods.isBanned = function () {
+  return this.bannedUntil && new Date(this.bannedUntil) > new Date();
 };
 
 export const User = mongoose.model('User', userSchema);

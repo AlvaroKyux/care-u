@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import '../styles/theme.css';
-import PostCard from '../components/PostCard';
+import AlertCard from '../components/AlertCard';
 import CategoryFilter from '../components/CategoryFilter';
-import { listCategories, listPosts } from '../api/posts';
+import { listCategories, listAlert } from '../api/alerts';
 import NotificationsBell from '../components/NotificationsBell';
 
 export default function Feed() {
@@ -29,7 +29,7 @@ export default function Feed() {
     setLoading(true);
     setErr('');
     try {
-      const { data } = await listPosts({ category, q, page: p, limit: 10 });
+      const { data } = await listAlert({ category, q, page: p, limit: 10 });
       setItems(data.items || []);
       setPage(Number(data.page) || p);
       setPages(Number(data.pages) || 1);
@@ -61,7 +61,7 @@ export default function Feed() {
     <div className="container">
       <div className="card" style={{ maxWidth: 860, width: '100%' }}>
         <div className="brand"><span className="dot" /><h1>CARE-U</h1></div>
-        <h2>Feed de incidencias</h2>
+        <h2>Feed de Alertas</h2>
         <p className="helper">Filtra por categoría o busca por texto</p>
 
         <div className="row" style={{ gap: 12, marginBottom: 12 }}>
@@ -83,9 +83,9 @@ export default function Feed() {
 
         <div className="row" style={{ gap: 14 }}>
           {items.map(p => (
-            <PostCard
+            <AlertCard
               key={p._id}
-              post={p}
+              alert={p}
               onChanged={() => fetchData(page)}
               isResolved={p.status === 'resolved'} // Prop para determinar si la publicación está resuelta
             />
